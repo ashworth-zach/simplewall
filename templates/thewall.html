@@ -31,12 +31,9 @@
   <div class="container profile">
     <h1>Hello {{session['userid'][0]['firstname']}}</h1>
     <h4>messages:</h4>
-    <li>hey</li>
-    <li>dude</li>
-    <li>wassup</li>
-    <li>bro</li>
-    <li>hey</li>
-    
+    {%for message in mymessages%}
+    <li>{{message['content']}}</li>
+    {%endfor%}
   </div>
   <div class="send">
     {%for users in allusers%}

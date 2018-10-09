@@ -89,8 +89,9 @@ def wall():
         'checkuser':session['userid'][0]['id']
     }
     allusers=mysql.query_db('select * from users where users.id !=%(checkuser)s',data)
-    # print(allusers)
-    return render_template('/thewall.html',allusers=allusers)
+    mymessages=mysql.query_db('select users.id,firstname,lastname,content,user_has_messages.id,user_has_messages.users_id,user_has_messages.messages_id from users join user_has_messages on users.id = user_has_messages.users_id join messages on messages.id = messages_id where user_has_messages.id = %(checkuser)s',data)
+    print(mymessages)
+    return render_template('/thewall.html',allusers=allusers,mymessages=mymessages)
 
 @app.route('/send', methods=['POST'])
 def sendmessage():
