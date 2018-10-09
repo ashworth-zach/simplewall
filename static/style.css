@@ -10,6 +10,9 @@ form{
 form:first-of-type{
     margin-left: 10%;
 }
+.profile{
+    height: 300px;
+}
 input{
     display: block;
 }
@@ -21,4 +24,8 @@ input{
 }
 nav:first-of-type{
     margin-top: -35px;
+}
+.send{
+    margin-left: 80%;
+    margin-top: -300px;
 }

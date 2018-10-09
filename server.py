@@ -23,7 +23,6 @@ def process():
         'email': request.form['email']
     }
     checkvalid=mysql.query_db(query,data)
-    print(checkvalid)
     if len(checkvalid)>0:
         flash('this email is already taken', 'erroremail')
         return redirect('/')
@@ -60,16 +59,17 @@ def process():
             'password': pw_hash
         }
         mysql.query_db(query,data)
-        session['userid']=mysql.query_db('SELECT users.id FROM users WHERE email=%(email)s',data)
+        session['userid']=mysql.query_db('SELECT * FROM users WHERE email=%(email)s',data)
         return redirect('/thewall')
     return redirect('/')
 @app.route('/login', methods=['POST'])
 def login():
-    query='select email,password,id from users where email = %(email)s'
+    query='select * from users where email = %(email)s'
     data={
         'email': request.form['email']
     }
     checkvalid=mysql.query_db(query,data)
+    # print(checkvalid)
     if len(checkvalid)>0:
         flash('this email exists','erroremaillogin')
     elif len(checkvalid)==0:
@@ -79,18 +79,33 @@ def login():
         flash('wrong password',"errorpasswordlogin")
         return redirect('/')
     elif len(checkvalid)>0 and  bcrypt.check_password_hash(checkvalid[0]['password'], request.form['password']) == True:
-        session['userid']=mysql.query_db('SELECT users.id FROM users WHERE email=%(email)s',data)
+        session['userid']=mysql.query_db('SELECT * FROM users WHERE email=%(email)s',data)
+        print(session['userid'])
         return redirect('/thewall')
     return redirect('/')
 @app.route('/thewall')
 def wall():
     data={
-        'id':session['userid']
+        'checkuser':session['userid'][0]['id']
     }
-    query=mysql.query_db('SELECT email,firstname,lastname from users where user.id = %(id)s')
-    user=mysql.query_db(query,data)
-    session['user']=user
-    print(session)
-    return render_template('/thewall.html')
+    allusers=mysql.query_db('select * from users where users.id !=%(checkuser)s',data)
+    # print(allusers)
+    return render_template('/thewall.html',allusers=allusers)
+
+@app.route('/send', methods=['POST'])
+def sendmessage():
+    data={
+        'content':request.form['message'],
+        'id':session['userid'][0]['id'],
+    }
+    x=mysql.query_db('INSERT INTO messages(content,created_at,updated_at) VALUES (%(content)s,NOW(),NOW())',data)
+    print(x)
+    data={
+        'messageid':x,
+        'id':session['userid'][0]['id'],
+        'recipient':request.form['hidden']
+    }
+    mysql.query_db('INSERT INTO user_has_messages(users_id,messages_id,id) VALUES(%(id)s,%(messageid)s,%(recipient)s)', data)
+    return redirect('/thewall')
 if __name__ == "__main__":
     app.run(debug=True)
